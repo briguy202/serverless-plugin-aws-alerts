@@ -74,21 +74,11 @@ class AlertsPlugin {
       return;
     }
 
-    const okActions = [];
-    const alarmActions = [];
-    const insufficientDataActions = [];
-
-    if (alertTopics.ok) {
-      okActions.push(alertTopics.ok);
-    }
-
-    if (alertTopics.alarm) {
-      alarmActions.push(alertTopics.alarm);
-    }
-
-    if (alertTopics.insufficientData) {
-      insufficientDataActions.push(alertTopics.insufficientData);
-    }
+    const actions = ['ok', 'alarm', 'insufficientData'].reduce((obj, key) => {
+      const topic = (definition.topics && definition.topics[key] && alertTopics[definition.topics[key]]) ? alertTopics[definition.topics[key]] : alertTopics[key];
+      obj[key] = (topic) ? [topic] : [];
+      return obj;
+    }, {});
 
     const namespace = definition.pattern ?
       this.awsProvider.naming.getStackName() :
@@ -117,9 +107,9 @@ class AlertsPlugin {
         Period: definition.period,
         EvaluationPeriods: definition.evaluationPeriods,
         ComparisonOperator: definition.comparisonOperator,
-        OKActions: okActions,
-        AlarmActions: alarmActions,
-        InsufficientDataActions: insufficientDataActions,
+        OKActions: actions.ok,
+        AlarmActions: actions.alarm,
+        InsufficientDataActions: actions.insufficientData,
         Dimensions: dimensions,
         TreatMissingData: treatMissingData,
       }
