@@ -151,7 +151,7 @@ class AlertsPlugin {
         const notifications = isTopicConfigAnObject ? topicConfig.notifications : [];
 
         if (topic) {
-          if (topic.indexOf('arn:') === 0) {
+          if ((isTopicConfigAnObject && topic['Fn::ImportValue']) || topic.indexOf('arn:') === 0) {
             alertTopics[key] = topic;
           } else {
             const cfRef = `AwsAlerts${_.upperFirst(key)}`;
@@ -221,8 +221,7 @@ class AlertsPlugin {
       const normalizedFunctionName = this.providerNaming.getLambdaLogicalId(functionName);
 
       const functionAlarms = this.getFunctionAlarms(functionObj, config, definitions);
-      const alarms = globalAlarms.concat(functionAlarms);
-
+      const alarms = globalAlarms.concat(functionAlarms).filter(a => a.enabled === undefined || a.enabled);
       const alarmStatements = alarms.reduce((statements, alarm) => {
         const key = this.naming.getAlarmCloudFormationRef(alarm.name, functionName);
         const cf = this.getAlarmCloudFormation(alertTopics, alarm, normalizedFunctionName);
