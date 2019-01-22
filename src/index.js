@@ -88,12 +88,13 @@ class AlertsPlugin {
       this.naming.getPatternMetricName(definition.metric, functionRef) :
       definition.metric;
 
-    const dimensions = definition.pattern ? [] : [{
+    const dimensionsObj = definition.dimensions || (definition.pattern ? [] : [{
       Name: 'FunctionName',
       Value: {
         Ref: functionRef,
       }
-    }];
+    }]);
+    const dimensions = JSON.parse(JSON.stringify(dimensionsObj).replace(/{{FunctionName}}/, functionRef));
 
     const treatMissingData = definition.treatMissingData ? definition.treatMissingData : 'missing';
 
