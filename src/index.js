@@ -222,7 +222,11 @@ class AlertsPlugin {
       const normalizedFunctionName = this.providerNaming.getLambdaLogicalId(functionName);
 
       const functionAlarms = this.getFunctionAlarms(functionObj, config, definitions);
-      const alarms = globalAlarms.concat(functionAlarms).filter(a => a.enabled === undefined || a.enabled);
+      const alarms = globalAlarms.concat(functionAlarms).filter(a =>
+        (a.enabled === undefined || a.enabled) &&
+        (a.excludeNames === undefined || a.excludeNames.filter(exclude => !functionName.toLowerCase().includes(exclude)).length > 0) &&
+        (a.includeNames === undefined || a.includeNames.filter(include => functionName.toLowerCase().includes(include)).length > 0)
+      );
       const alarmStatements = alarms.reduce((statements, alarm) => {
         const key = this.naming.getAlarmCloudFormationRef(alarm.name, functionName);
         const cf = this.getAlarmCloudFormation(alertTopics, alarm, normalizedFunctionName);
